@@ -1,0 +1,159 @@
+:root {
+  color-scheme: dark;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #0b0d10;
+  color: #e6e6e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+a {
+  color: #e2bb53;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #222;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.title {
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title b {
+  color: #e2bb53;
+}
+
+.version {
+  font-size: 11px;
+  color: #6a6a6a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.panel {
+  background: #14171b;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 14px 16px 16px;
+  position: relative;
+}
+
+.panel.stale {
+  opacity: 0.55;
+  border-color: #2a2a2a;
+}
+
+.panel .name {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8a8a8a;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.panel .value {
+  font-size: 26px;
+  font-weight: 600;
+  color: #e6e6e6;
+}
+
+.panel .sub {
+  font-size: 12px;
+  color: #8a8a8a;
+  margin-top: 6px;
+}
+
+.panel .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 4px;
+}
+
+.panel .row .k {
+  color: #6a6a6a;
+}
+
+.bar {
+  display: flex;
+  height: 6px;
+  background: #1a1d22;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.bar > span {
+  display: block;
+  background: #e2bb53;
+}
+
+.bar.green > span {
+  background: #62b67a;
+}
+
+.health {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.health .pill {
+  background: #14171b;
+  border: 1px solid #222;
+  padding: 4px 10px;
+  border-radius: 12px;
+  color: #9a9a9a;
+}
+
+.health .pill.ok {
+  color: #62b67a;
+  border-color: #234029;
+}
+
+.health .pill.bad {
+  color: #d36a6a;
+  border-color: #3f2222;
+}
+
+.muted {
+  color: #6a6a6a;
+}
+
+.footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #6a6a6a;
+  text-align: center;
+}
