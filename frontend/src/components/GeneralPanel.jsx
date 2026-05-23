@@ -18,7 +18,7 @@ export default function GeneralPanel() {
   return (
     <div className={`panel ${stale ? "stale" : ""}`}>
       <div className="name">
-        <span>agent general</span>
+        <span>agent general ghost</span>
         <span className="muted">directional</span>
       </div>
       {!env ? (

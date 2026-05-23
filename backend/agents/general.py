@@ -68,9 +68,9 @@ class GeneralAgent(Agent):
         components = heat_value.get("components") or {}
         base_reasoning = (
             f"Heat {heat_score:.1f} (fill rate {components.get('fill_rate', 0)}, "
-            f"holders {components.get('holder', 0)}, velocity {components.get('velocity', 0)}). "
+            f"TVL {components.get('tvl', 0)}, velocity {components.get('velocity', 0)}). "
             f"Spread {spread_bps:.1f} bps"
-            f"{' — wide, fading the heat signal' if wide_book else ''}."
+            f"{', wide book fading the heat signal' if wide_book else ''}."
         )
         if notes:
             base_reasoning = f"{base_reasoning} Notes: {notes}."

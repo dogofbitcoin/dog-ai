@@ -5,6 +5,8 @@ import SignalQualityPanel from "./components/SignalQualityPanel.jsx";
 import OnchainHeatPanel from "./components/OnchainHeatPanel.jsx";
 import AlphaPanel from "./components/AlphaPanel.jsx";
 import GeneralPanel from "./components/GeneralPanel.jsx";
+import TraderPanel from "./components/TraderPanel.jsx";
+import KrakenPanel from "./components/KrakenPanel.jsx";
 
 export default function App() {
   return (
@@ -18,7 +20,13 @@ export default function App() {
 
       <HealthBar />
 
-      <div className="section-label">agents</div>
+      <div className="section-label">main character</div>
+      <TraderPanel />
+
+      <div className="section-label">exchange specialist</div>
+      <KrakenPanel />
+
+      <div className="section-label">supporting cast</div>
       <div className="grid">
         <AlphaPanel />
         <GeneralPanel />

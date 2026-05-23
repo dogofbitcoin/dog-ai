@@ -1,15 +1,14 @@
 """On chain heat indicator.
 
-A 0 to 100 score reflecting how active the $DOG Rune is right now. Three
+A 0 to 100 score reflecting how active the $DOG Rune pool is right now. Three
 components, each capped at a defensible heuristic threshold:
 
-  1. Fill rate (0 to 40): recent fills per minute, normalised against a busy
-     baseline of 20 fills per minute.
-  2. Holder delta proxy (0 to 30): in v0.1 we score absolute holder count
-     past thresholds, since we do not persist history across restarts. v0.2
-     can swap this for a true delta when durable storage lands.
-  3. Volume velocity (0 to 30): the ratio of the last hour fill notional to
-     the average hourly notional implied by the 24 hour total. Above 1.0 is
+  1. Fill rate (0 to 40): swaps per minute in the last hour, normalised
+     against a busy baseline of 2 swaps per minute.
+  2. TVL health (0 to 30): pool TVL in DOG units, normalised against a
+     healthy baseline of 100M DOG.
+  3. Volume velocity (0 to 30): the ratio of the last hour notional to the
+     average hourly notional implied by the 24 hour total. Above 1.0 is
      "hotter than usual"; capped at 3.0 for the full 30 points.
 
 The General agent uses this score to push or hold a directional stance.
@@ -20,12 +19,9 @@ from __future__ import annotations
 from . import register
 from .base import Indicator, IndicatorContext
 
-FILLS_PER_MIN_FULL = 20.0
-
-HOLDER_TIER_FULL = 25_000  # roughly active rune community
-HOLDER_TIER_HALF = 10_000
-
-VELOCITY_FULL = 3.0  # 1h notional running at 3x the 24h average
+FILLS_PER_MIN_FULL = 2.0
+TVL_FULL_DOG = 100_000_000.0
+VELOCITY_FULL = 3.0
 
 
 def _fill_rate_score(fill_count_1h: int) -> float:
@@ -33,16 +29,10 @@ def _fill_rate_score(fill_count_1h: int) -> float:
     return min(40.0, (rate_per_min / FILLS_PER_MIN_FULL) * 40.0)
 
 
-def _holder_score(holder_count: int) -> float:
-    if holder_count >= HOLDER_TIER_FULL:
-        return 30.0
-    if holder_count >= HOLDER_TIER_HALF:
-        # Linear between half tier and full tier.
-        span = HOLDER_TIER_FULL - HOLDER_TIER_HALF
-        return 15.0 + 15.0 * ((holder_count - HOLDER_TIER_HALF) / span)
-    if holder_count <= 0:
+def _tvl_score(tvl_dog: float) -> float:
+    if tvl_dog <= 0:
         return 0.0
-    return 15.0 * (holder_count / HOLDER_TIER_HALF)
+    return min(30.0, (tvl_dog / TVL_FULL_DOG) * 30.0)
 
 
 def _velocity_score(recent_fills: list, volume_24h_btc: float) -> float:
@@ -72,25 +62,27 @@ class OnchainHeatIndicator(Indicator):
             }
 
         fill_rate = _fill_rate_score(int(ds.get("fill_count_1h") or 0))
-        holder = _holder_score(int(ds.get("holder_count") or 0))
+        tvl = _tvl_score(float(ds.get("tvl_dog") or 0.0))
         velocity = _velocity_score(
             ds.get("recent_fills") or [],
             float(ds.get("volume_24h_btc") or 0.0),
         )
 
-        score = round(fill_rate + holder + velocity, 1)
+        score = round(fill_rate + tvl + velocity, 1)
         return {
             "value": {
                 "score": score,
                 "components": {
                     "fill_rate": round(fill_rate, 1),
-                    "holder": round(holder, 1),
+                    "tvl": round(tvl, 1),
                     "velocity": round(velocity, 1),
                 },
                 "raw": {
                     "fill_count_1h": int(ds.get("fill_count_1h") or 0),
-                    "holder_count": int(ds.get("holder_count") or 0),
+                    "fill_count_24h": int(ds.get("fill_count_24h") or 0),
+                    "tvl_dog": float(ds.get("tvl_dog") or 0.0),
                     "volume_24h_btc": float(ds.get("volume_24h_btc") or 0.0),
+                    "floor_sats_per_dog": float(ds.get("floor_sats_per_dog") or 0.0),
                 },
             },
             "ts": int(ds.get("ts") or now),

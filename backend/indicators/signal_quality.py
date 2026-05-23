@@ -21,7 +21,10 @@ from .base import Indicator, IndicatorContext
 FRESH_FULL_S = 30
 FRESH_ZERO_S = 300
 
-DEPTH_FULL_USD = 250.0  # USD notional on each side considered "full"
+# Depth is measured in DOG units across the top 3 levels of each side.
+# 500k DOG on each side is "full". This works for both DOGUSD (direct) and
+# DOGBTC (synthetic) since both report quote volumes in DOG.
+DEPTH_FULL_DOG = 500_000.0
 
 
 def _freshness_score(age_seconds: float) -> float:
@@ -39,14 +42,14 @@ def _depth_score(orderbook: dict) -> float:
         return 0.0
     bids = orderbook.get("bids") or []
     asks = orderbook.get("asks") or []
-    bid_notional = sum(p * v for p, v in bids[:3])
-    ask_notional = sum(p * v for p, v in asks[:3])
-    side = min(bid_notional, ask_notional)
-    if side >= DEPTH_FULL_USD:
+    bid_dog = sum(v for _, v in bids[:3])
+    ask_dog = sum(v for _, v in asks[:3])
+    side = min(bid_dog, ask_dog)
+    if side >= DEPTH_FULL_DOG:
         return 30.0
     if side <= 0:
         return 0.0
-    return 30.0 * (side / DEPTH_FULL_USD)
+    return 30.0 * (side / DEPTH_FULL_DOG)
 
 
 def _agreement_score(kraken_bid: float, dotswap_floor: float) -> float:
@@ -87,6 +90,7 @@ class SignalQualityIndicator(Indicator):
 
         freshness = _freshness_score(age)
         depth = _depth_score(kr_book)
+        # Both should be BTC per DOG (synthetic Kraken bid is already in BTC).
         agreement = _agreement_score(
             kraken_bid=float(kr_ticker.get("bid") or 0.0) if "error" not in kr_ticker else 0.0,
             dotswap_floor=float(ds.get("floor_btc") or 0.0) if "error" not in ds else 0.0,

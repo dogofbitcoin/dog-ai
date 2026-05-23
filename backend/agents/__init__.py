@@ -42,3 +42,10 @@ def make_context(agent: Agent, now_ts: int | None = None) -> AgentContext:
 # Import implementations so they self register. Alphabetical.
 from . import alpha  # noqa: E402, F401
 from . import general  # noqa: E402, F401
+from . import kraken  # noqa: E402, F401
+from . import trader  # noqa: E402, F401
+
+
+def get_trader():
+    """Returns the singleton TraderAgent instance (for the background loop)."""
+    return get("trader")

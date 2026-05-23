@@ -14,6 +14,7 @@ The dashboard polls `/indicators` and `/health/providers` on a fixed cadence.
 
 from __future__ import annotations
 
+import asyncio
 import os
 from typing import Any
 
@@ -123,6 +124,31 @@ async def get_agent(name: str) -> dict:
     return {"name": ag.name, "inputs": ag.inputs, "envelope": await ag.decide(ctx)}
 
 
+@app.get("/agents/trader/strategies")
+async def list_trader_strategies() -> dict:
+    from .agents.strategies import list_strategies
+    from .agents.trader import TraderAgent
+    trader = _agt.get("trader")
+    active = trader.state["strategy"] if isinstance(trader, TraderAgent) else None
+    return {"active": active, "strategies": list_strategies()}
+
+
+@app.post("/agents/trader/strategy")
+async def set_trader_strategy(name: str = Query(..., min_length=1)) -> dict:
+    from .agents.trader import TraderAgent
+    trader = _agt.get("trader")
+    if not isinstance(trader, TraderAgent):
+        raise HTTPException(status_code=500, detail="trader agent missing")
+    ok = trader.set_strategy(name)
+    if not ok:
+        from .agents.strategies import list_strategies
+        raise HTTPException(
+            status_code=400,
+            detail={"error": f"unknown strategy {name!r}", "available": [s["name"] for s in list_strategies()]},
+        )
+    return {"active": trader.state["strategy"]}
+
+
 @app.get("/kraken/dry-run")
 async def kraken_dry_run(
     side: str = Query(..., pattern="^(buy|sell)$"),
@@ -147,11 +173,42 @@ async def kraken_dry_run(
     return {"command": cmd, "note": "v0.1 is read only; copy this and run it yourself."}
 
 
+_trader_task: Any = None
+
+
+async def _trader_loop() -> None:
+    from .agents.trader import DECISION_CADENCE_S, TraderAgent
+    trader = _agt.get("trader")
+    assert isinstance(trader, TraderAgent)
+    while True:
+        try:
+            await trader.cycle(ctx_factory=lambda: _agt.make_context(trader))
+        except Exception as e:
+            log.warning("trader cycle errored: %s", e)
+        await asyncio.sleep(DECISION_CADENCE_S)
+
+
 @app.on_event("startup")
 async def _startup() -> None:
+    global _trader_task
     log.info(
         "dog of bitcoin backend up; providers=%s indicators=%s agents=%s",
         [p.name for p in _prov.all_providers()],
         [i.name for i in _ind.all_indicators()],
         [a.name for a in _agt.all_agents()],
     )
+    if os.getenv("TRADER_DISABLED") == "1":
+        log.info("trader loop disabled via TRADER_DISABLED=1")
+        return
+    _trader_task = asyncio.create_task(_trader_loop())
+
+
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    global _trader_task
+    if _trader_task is not None:
+        _trader_task.cancel()
+        try:
+            await _trader_task
+        except (asyncio.CancelledError, Exception):
+            pass

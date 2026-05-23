@@ -14,7 +14,7 @@ async def test_score_caps_at_100_under_extreme_inputs(fake_ctx):
             "dotswap": {
                 "ts": 1,
                 "fill_count_1h": 100_000,
-                "holder_count": 1_000_000,
+                "tvl_dog": 500_000_000.0,
                 "volume_24h_btc": 1.0,
                 # 24 hour avg is 1/24 = 0.04167; running 1.0 in 1 hour is ratio 24, capped at 3.
                 "recent_fills": [{"notional_btc": 1.0}],
