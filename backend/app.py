@@ -23,7 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-# Importing the packages triggers self registration of providers and indicators.
+# Importing the packages triggers self registration.
+from . import agents as _agt  # noqa: E402
 from . import indicators as _ind  # noqa: E402
 from . import providers as _prov  # noqa: E402
 from .log import log  # noqa: E402
@@ -102,6 +103,26 @@ async def get_indicator(name: str) -> dict:
     }
 
 
+@app.get("/agents")
+async def list_agents() -> dict:
+    out: list[dict[str, Any]] = []
+    for ag in _agt.all_agents():
+        ctx = _agt.make_context(ag)
+        env = await ag.decide(ctx)
+        out.append({"name": ag.name, "inputs": ag.inputs, "envelope": env})
+    return {"agents": out}
+
+
+@app.get("/agents/{name}")
+async def get_agent(name: str) -> dict:
+    try:
+        ag = _agt.get(name)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    ctx = _agt.make_context(ag)
+    return {"name": ag.name, "inputs": ag.inputs, "envelope": await ag.decide(ctx)}
+
+
 @app.get("/kraken/dry-run")
 async def kraken_dry_run(
     side: str = Query(..., pattern="^(buy|sell)$"),
@@ -129,7 +150,8 @@ async def kraken_dry_run(
 @app.on_event("startup")
 async def _startup() -> None:
     log.info(
-        "dog of bitcoin backend up; providers=%s indicators=%s",
+        "dog of bitcoin backend up; providers=%s indicators=%s agents=%s",
         [p.name for p in _prov.all_providers()],
         [i.name for i in _ind.all_indicators()],
+        [a.name for a in _agt.all_agents()],
     )

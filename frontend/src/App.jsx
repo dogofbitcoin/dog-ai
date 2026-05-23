@@ -3,6 +3,8 @@ import SpreadPanel from "./components/SpreadPanel.jsx";
 import VwapPanel from "./components/VwapPanel.jsx";
 import SignalQualityPanel from "./components/SignalQualityPanel.jsx";
 import OnchainHeatPanel from "./components/OnchainHeatPanel.jsx";
+import AlphaPanel from "./components/AlphaPanel.jsx";
+import GeneralPanel from "./components/GeneralPanel.jsx";
 
 export default function App() {
   return (
@@ -16,6 +18,13 @@ export default function App() {
 
       <HealthBar />
 
+      <div className="section-label">agents</div>
+      <div className="grid">
+        <AlphaPanel />
+        <GeneralPanel />
+      </div>
+
+      <div className="section-label">indicators</div>
       <div className="grid">
         <SpreadPanel />
         <VwapPanel />
