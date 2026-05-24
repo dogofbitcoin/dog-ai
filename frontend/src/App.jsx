@@ -8,6 +8,7 @@ import GeneralPanel from "./components/GeneralPanel.jsx";
 import TraderPanel from "./components/TraderPanel.jsx";
 import KrakenPanel from "./components/KrakenPanel.jsx";
 import WhatToWatch from "./components/WhatToWatch.jsx";
+import CharacterStrip from "./components/CharacterStrip.jsx";
 
 export default function App() {
   return (
@@ -24,6 +25,8 @@ export default function App() {
       </header>
 
       <HealthBar />
+
+      <CharacterStrip />
 
       <WhatToWatch />
 
