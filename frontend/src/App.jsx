@@ -24,24 +24,29 @@ export default function App() {
 
       <HealthBar />
 
-      <div className="section-label">main character</div>
-      <TraderPanel />
-
-      <div className="section-label">exchange specialist</div>
-      <KrakenPanel />
-
-      <div className="section-label">supporting cast</div>
-      <div className="grid">
-        <AlphaPanel />
-        <GeneralPanel />
-      </div>
-
       <div className="section-label">indicators</div>
-      <div className="grid">
+      <div className="indicator-strip">
         <SpreadPanel />
         <VwapPanel />
         <SignalQualityPanel />
         <OnchainHeatPanel />
+      </div>
+
+      <div className="agents-row">
+        <div>
+          <div className="section-label">main character</div>
+          <TraderPanel />
+        </div>
+        <div>
+          <div className="section-label">exchange specialist</div>
+          <KrakenPanel />
+        </div>
+      </div>
+
+      <div className="section-label">supporting cast</div>
+      <div className="support-row">
+        <AlphaPanel />
+        <GeneralPanel />
       </div>
 
       <footer className="footer">
