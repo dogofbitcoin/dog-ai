@@ -7,6 +7,7 @@ import AlphaPanel from "./components/AlphaPanel.jsx";
 import GeneralPanel from "./components/GeneralPanel.jsx";
 import TraderPanel from "./components/TraderPanel.jsx";
 import KrakenPanel from "./components/KrakenPanel.jsx";
+import WhatToWatch from "./components/WhatToWatch.jsx";
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
       </header>
 
       <HealthBar />
+
+      <WhatToWatch />
 
       <div className="section-label">indicators</div>
       <div className="indicator-strip">

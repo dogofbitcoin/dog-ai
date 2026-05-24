@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api.js";
 import { usePolling } from "../hooks/usePolling.js";
+import { useSparkline } from "../hooks/useSparkline.js";
 import Tabs from "./Tabs.jsx";
+import Sparkline from "./Sparkline.jsx";
+import RiskMeter from "./RiskMeter.jsx";
 
 const STANCE_COLOR = {
   trading: "#f7931a",
@@ -39,14 +42,24 @@ function NowTab({ t, env }) {
   const dog = t.balance?.DOG?.total ?? 0;
   const value = t.portfolio?.current_value ?? 0;
   const pnlPct = t.portfolio?.unrealized_pnl_pct ?? 0;
+  const valueHistory = useSparkline(value);
 
   return (
     <>
       <div className="trader-row compact">
-        <div className="metric"><div className="k">portfolio</div><div className="v">{fmtUsd(value)}</div></div>
-        <div className="metric"><div className="k">pnl</div><div className="v" style={{ color: pnlPct >= 0 ? "#f7931a" : "#e85a8a" }}>{pnlPct.toFixed(2)}%</div></div>
-        <div className="metric"><div className="k">cash</div><div className="v">{fmtUsd(usd)}</div></div>
-        <div className="metric"><div className="k">dog held</div><div className="v">{fmtNum(dog, 0)}</div></div>
+        <div className="metric" data-tip="total paper portfolio value in usd, cash plus dog at last price.">
+          <div className="k">portfolio</div>
+          <div className="v-with-spark">
+            <div className="v">{fmtUsd(value)}</div>
+            <Sparkline data={valueHistory} color="#f7931a" width={64} height={18} />
+          </div>
+        </div>
+        <div className="metric" data-tip="unrealized profit and loss as a percentage of starting capital. orange means up, pink means down.">
+          <div className="k">pnl</div>
+          <div className="v" style={{ color: pnlPct >= 0 ? "#f7931a" : "#e85a8a" }}>{pnlPct.toFixed(2)}%</div>
+        </div>
+        <div className="metric" data-tip="usd cash sitting in the paper account, ready to buy."><div className="k">cash</div><div className="v">{fmtUsd(usd)}</div></div>
+        <div className="metric" data-tip="dog held in the paper position."><div className="k">dog held</div><div className="v">{fmtNum(dog, 0)}</div></div>
         <div className="metric"><div className="k">last decision</div><div className="v">{fmtAgo(t.last_decision_ts)}</div></div>
         <div className="metric"><div className="k">last fill</div><div className="v">{fmtAgo(t.last_fill_ts)}</div></div>
       </div>
@@ -66,6 +79,8 @@ function NowTab({ t, env }) {
           <span className="muted">(awaiting first cycle)</span>
         )}
       </div>
+
+      <RiskMeter t={t} />
     </>
   );
 }
