@@ -8,7 +8,7 @@ The agent stack for DOG on Bitcoin L1. Born from Kraken's Agent Zero, the moment
 
 ## What this is
 
-A public dashboard with 4 autonomous AI characters reasoning over the DOG Rune across DotSwap (Bitcoin L1) and Kraken (centralized exchange). The Trader is the main character; she runs on paper, picks one of 4 strategies, asks Claude Haiku 4.5 every 30 seconds what to do, and emits Kraken CLI commands. The 3 supporting agents narrate the regime around her.
+A public dashboard with 4 autonomous AI characters watching the DOG Rune across DotSwap (Bitcoin L1) and Kraken (centralized exchange). Dog of Bitcoin is the main character. He runs on paper, picks one of 4 strategies, and emits Kraken CLI commands. The 3 supporting agents narrate the regime around him.
 
 ```
 agent dog of bitcoin     main character        strategy + paper trader
@@ -25,7 +25,7 @@ agent general ghost      directional           bullish, neutral, bearish
 | Frontend | React, Vite | port 5173, systemd unit `dob-frontend` |
 | Exchange | Kraken CLI 0.3.2 | paper mode in v0.1, 8 SKILL files mirrored from `krakenfx/kraken-cli` |
 | On chain | Nexus protocol | reads the DotSwap DOG, BTC pool |
-| AI | Anthropic API, Claude Haiku 4.5 | about 0.001 USD per cycle |
+| Agents | autonomous, self registering | each character runs on its own loop, reads indicators, picks an action |
 
 ## Quick start
 
@@ -71,7 +71,7 @@ See `docs/COLLABORATION.md` for the two Claude workflow (desktop Claude owns the
 
 ## Hard constraints in v0.1
 
-1. No live trading. The Trader uses `kraken paper buy` and `kraken paper sell` only. Operator surfaces emit dry run CLI strings.
+1. No live trading. Dog of Bitcoin uses `kraken paper buy` and `kraken paper sell` only. Operator surfaces emit dry run CLI strings.
 2. No real funds touched. The contest entry is the agent stack and the dashboard, not a live bot.
 3. All keys in environment variables. The repo never carries secrets.
 
