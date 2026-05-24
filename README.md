@@ -1,48 +1,84 @@
-# Dog of Bitcoin
+# DOG Ai
 
-A live dashboard for the $DOG Rune on Bitcoin. It combines on-chain data from DotSwap with market data from Kraken, and surfaces the result through a small set of self-contained indicators and agents.
+The agent stack for DOG on Bitcoin L1. Born from Kraken's Agent Zero, the moment the exchange reached its tentacles toward the base layer.
 
-Version: 0.1.0 (read only on the trading side).
+> **v0.1.0 Release The Kraken**
+> Kraken Agent Zero submission, deadline 2026-05-27.
+> Live dashboard: `http://98.87.230.156:5173`
+
+## What this is
+
+A public dashboard with 4 autonomous AI characters reasoning over the DOG Rune across DotSwap (Bitcoin L1) and Kraken (centralized exchange). The Trader is the main character; she runs on paper, picks one of 4 strategies, asks Claude Haiku 4.5 every 30 seconds what to do, and emits Kraken CLI commands. The 3 supporting agents narrate the regime around her.
+
+```
+agent dog of bitcoin     main character        strategy + paper trader
+agent kraken             exchange specialist   CLI surface + skill picker
+agent alpha              data confidence       signal quality narrator
+agent general ghost      directional           bullish, neutral, bearish
+```
+
+## Stack at a glance
+
+| Layer | Tech | Notes |
+|---|---|---|
+| Backend | FastAPI, Python 3.11, uvicorn | port 8000, systemd unit `dob-backend` |
+| Frontend | React, Vite | port 5173, systemd unit `dob-frontend` |
+| Exchange | Kraken CLI 0.3.2 | paper mode in v0.1, 8 SKILL files mirrored from `krakenfx/kraken-cli` |
+| On chain | Nexus protocol | reads the DotSwap DOG, BTC pool |
+| AI | Anthropic API, Claude Haiku 4.5 | about 0.001 USD per cycle |
 
 ## Quick start
 
-See `docs/RUNNING.md` for the full setup. The short version:
-
-```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp ../.env.example ../.env  # fill in DOTSWAP_API_KEY
-uvicorn app:app --reload --port 8000
 ```
+git clone git@github.com:dogofbitcoin/dog-ai.git
+cd dog-ai
+cp .env.example .env
+# fill in ANTHROPIC_API_KEY, NEXUS_URL, NEXUS_API_KEY
 
-In a second terminal:
+python3.11 -m venv backend/.venv
+backend/.venv/bin/pip install -r backend/requirements.txt
+backend/.venv/bin/uvicorn backend.app:app --host 0.0.0.0 --port 8000 &
 
-```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-Open http://localhost:5173.
+Open `http://localhost:5173`. See `docs/RUNNING.md` for the long version.
 
-## What is inside
+## Branch model
 
-| Layer | Lives in | One liner |
-|---|---|---|
-| Providers | `backend/providers/` | Pull data from DotSwap and the Kraken CLI |
-| Indicators | `backend/indicators/` | Turn raw data into named signals |
-| Agents | `backend/agents/` | Read indicators, produce a stance |
-| Dashboard | `frontend/` | Render panels for each indicator and agent |
+- `main` protected, curated releases
+- `develop` integration branch, default for collaborators
+- `claude-aws` autonomous AWS Claude implementer branch
+- `feature/<name>` for human contributor work
 
-Each layer is decoupled. Adding a new provider, indicator, or agent does not require touching the others. See `docs/PROVIDERS.md` and `docs/INDICATORS.md` for the contracts.
+See `docs/COLLABORATION.md` for the two Claude workflow (desktop Claude owns the visual spec from screenshots, AWS Claude implements to spec without image access).
 
-## What v0.1 is and is not
+## Documentation map
 
-**Is:** a read only dashboard. It fetches, computes, and renders. Operator actions are surfaced as dry run Kraken CLI strings the user can run themselves.
+| Document | Covers |
+|---|---|
+| `CLAUDE.md` | Style rules, conventions for any Claude session on this repo |
+| `docs/UI_SPEC.md` | Visual contract, layout, color tokens, components, motion |
+| `docs/COLLABORATION.md` | Two Claude workflow, file ownership, branch rules |
+| `docs/reference/README.md` | Screenshot drop folder + scene tag naming |
+| `docs/PROVIDERS.md` | Provider interface contract |
+| `docs/INDICATORS.md` | Indicator interface contract |
+| `docs/CONTRIBUTING.md` | Tests required, no live trading in v0.1 |
+| `docs/RUNNING.md` | Full local setup walkthrough |
+| `docs/kraken-skills/` | 8 SKILL.md files mirrored from `krakenfx/kraken-cli`, MIT, attribution in `LICENSE.kraken-cli` |
 
-**Is not:** an automated trader. No orders are placed by the dashboard. See `docs/CONTRIBUTING.md` for why this stays read only in v0.1.
+## Hard constraints in v0.1
+
+1. No live trading. The Trader uses `kraken paper buy` and `kraken paper sell` only. Operator surfaces emit dry run CLI strings.
+2. No real funds touched. The contest entry is the agent stack and the dashboard, not a live bot.
+3. All keys in environment variables. The repo never carries secrets.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See `LICENSE`. The mirrored Kraken CLI SKILL files retain their own MIT notice at `LICENSE.kraken-cli`.
+
+## Credits
+
+Built collaboratively with Anthropic's Claude. The Dog of Bitcoin Foundation is the maintainer.
