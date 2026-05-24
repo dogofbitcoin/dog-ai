@@ -3,16 +3,16 @@ import { api } from "../api.js";
 import { usePolling } from "../hooks/usePolling.js";
 
 const STANCE_COLOR = {
-  trading: "#62b67a",
-  idle: "#9a9a9a",
-  halted: "#d36a6a",
+  trading: "#f7931a",
+  idle: "#7a7088",
+  halted: "#e85a8a",
 };
 
 const ACTION_COLOR = {
-  buy: "#62b67a",
-  sell: "#d36a6a",
-  hold: "#9a9a9a",
-  strategy_change: "#e2bb53",
+  buy: "#f7931a",
+  sell: "#c084fc",
+  hold: "#7a7088",
+  strategy_change: "#ffb35e",
 };
 
 function fmtAgo(ts) {
@@ -45,7 +45,7 @@ export default function TraderPanel() {
 
   const env = data?.envelope;
   const t = env?.trader;
-  const color = STANCE_COLOR[env?.stance] || "#9a9a9a";
+  const color = STANCE_COLOR[env?.stance] || "#7a7088";
 
   const onPickStrategy = async (name) => {
     if (switching || name === t?.strategy?.active) return;
@@ -107,7 +107,7 @@ export default function TraderPanel() {
 
           <div className="trader-row">
             <div className="metric"><div className="k">portfolio</div><div className="v">{fmtUsd(value)}</div></div>
-            <div className="metric"><div className="k">pnl</div><div className="v" style={{ color: pnlPct >= 0 ? "#62b67a" : "#d36a6a" }}>{pnlPct.toFixed(2)}%</div></div>
+            <div className="metric"><div className="k">pnl</div><div className="v" style={{ color: pnlPct >= 0 ? "#f7931a" : "#e85a8a" }}>{pnlPct.toFixed(2)}%</div></div>
             <div className="metric"><div className="k">cash</div><div className="v">{fmtUsd(usd)}</div></div>
             <div className="metric"><div className="k">dog held</div><div className="v">{fmtNum(dog, 0)}</div></div>
             <div className="metric"><div className="k">trades</div><div className="v">{trades}</div></div>
@@ -116,13 +116,13 @@ export default function TraderPanel() {
             <div className="metric"><div className="k">last fill</div><div className="v">{fmtAgo(t.last_fill_ts)}</div></div>
           </div>
 
-          {env.meta?.notes ? <div className="sub" style={{ color: "#d36a6a" }}>{env.meta.notes}</div> : null}
+          {env.meta?.notes ? <div className="sub" style={{ color: "#e85a8a" }}>{env.meta.notes}</div> : null}
 
           <div className="trader-current">
             <span className="k">current intent: </span>
             {t.current_intent ? (
               <>
-                <span style={{ color: ACTION_COLOR[t.current_intent.action] || "#9a9a9a" }}>
+                <span style={{ color: ACTION_COLOR[t.current_intent.action] || "#7a7088" }}>
                   {t.current_intent.action.toUpperCase()} {fmtNum(t.current_intent.size_dog, 0)} DOG
                 </span>
                 <span className="muted"> — {t.current_intent.reasoning}</span>
@@ -140,7 +140,7 @@ export default function TraderPanel() {
               log.slice(0, 12).map((entry, i) => {
                 const d = entry.decision || {};
                 const r = entry.result || {};
-                const aColor = ACTION_COLOR[d.action] || "#9a9a9a";
+                const aColor = ACTION_COLOR[d.action] || "#7a7088";
                 return (
                   <div key={i} className="log-entry">
                     <span className="log-time">{fmtAgo(entry.ts)}</span>

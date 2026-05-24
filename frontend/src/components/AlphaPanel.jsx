@@ -3,9 +3,9 @@ import { api } from "../api.js";
 import { usePolling } from "../hooks/usePolling.js";
 
 const STANCE_COLOR = {
-  confident: "#62b67a",
-  tentative: "#e2bb53",
-  blind: "#9a9a9a",
+  confident: "#f7931a",
+  tentative: "#ffb35e",
+  blind: "#7a7088",
 };
 
 export default function AlphaPanel() {
@@ -13,7 +13,7 @@ export default function AlphaPanel() {
   const { data } = usePolling(fetcher, 5000);
   const env = data?.envelope;
   const stale = env?.meta?.stale;
-  const color = STANCE_COLOR[env?.stance] || "#9a9a9a";
+  const color = STANCE_COLOR[env?.stance] || "#7a7088";
 
   return (
     <div className={`panel ${stale ? "stale" : ""}`}>

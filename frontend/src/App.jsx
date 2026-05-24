@@ -13,9 +13,13 @@ export default function App() {
     <div className="app">
       <header className="header">
         <div className="title">
-          dog <b>of</b> bitcoin
+          <span className="brand-dog">DOG</span>
+          <span className="brand-ai"> Ai</span>
+          <span className="brand-sep">:</span>
+          <span className="brand-release"> Release The </span>
+          <span className="brand-kraken">Kraken</span>
         </div>
-        <div className="version">v0.1.0 read only</div>
+        <div className="version">v0.1.0 · paper trading</div>
       </header>
 
       <HealthBar />

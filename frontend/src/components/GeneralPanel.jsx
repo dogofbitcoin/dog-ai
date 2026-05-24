@@ -3,9 +3,9 @@ import { api } from "../api.js";
 import { usePolling } from "../hooks/usePolling.js";
 
 const STANCE_COLOR = {
-  bullish: "#62b67a",
-  neutral: "#e2bb53",
-  bearish: "#d36a6a",
+  bullish: "#f7931a",
+  neutral: "#ffb35e",
+  bearish: "#c084fc",
 };
 
 export default function GeneralPanel() {
@@ -13,7 +13,7 @@ export default function GeneralPanel() {
   const { data } = usePolling(fetcher, 5000);
   const env = data?.envelope;
   const stale = env?.meta?.stale;
-  const color = STANCE_COLOR[env?.stance] || "#9a9a9a";
+  const color = STANCE_COLOR[env?.stance] || "#7a7088";
 
   return (
     <div className={`panel ${stale ? "stale" : ""}`}>
