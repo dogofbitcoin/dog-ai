@@ -20,6 +20,7 @@ export const api = {
   agent: (name) => getJson(`/agents/${name}`),
   strategies: () => getJson("/agents/trader/strategies"),
   setStrategy: (name) => postJson(`/agents/trader/strategy?name=${encodeURIComponent(name)}`),
+  treasury: () => getJson("/treasury"),
   dryRun: ({ side, volume, price, pair, orderType }) => {
     const params = new URLSearchParams({ side, volume: String(volume) });
     if (price != null) params.set("price", String(price));

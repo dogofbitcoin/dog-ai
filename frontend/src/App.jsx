@@ -8,55 +8,47 @@ import GeneralPanel from "./components/GeneralPanel.jsx";
 import TraderPanel from "./components/TraderPanel.jsx";
 import KrakenPanel from "./components/KrakenPanel.jsx";
 import WhatToWatch from "./components/WhatToWatch.jsx";
-import CharacterStrip from "./components/CharacterStrip.jsx";
+import ArbPanel from "./components/ArbPanel.jsx";
+import TreasuryPanel from "./components/TreasuryPanel.jsx";
 
 export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <div className="title">
-          <span className="brand-dog">DOG</span>
-          <span className="brand-ai"> Ai</span>
-          <span className="brand-sep">:</span>
-          <span className="brand-release"> Release The </span>
-          <span className="brand-kraken">Kraken</span>
-        </div>
+        <picture className="header-logo">
+          <source srcSet="/assets/branding/logo.webp" type="image/webp" />
+          <img src="/assets/branding/logo.png" alt="DOG Ai: Release The Kraken" className="header-logo-img" />
+        </picture>
         <div className="version">v0.1.0 · paper trading</div>
       </header>
 
-      <HealthBar />
+      <TreasuryPanel />
 
-      <CharacterStrip />
-
-      <WhatToWatch />
-
-      <div className="section-label">indicators</div>
-      <div className="indicator-strip">
-        <SpreadPanel />
-        <VwapPanel />
-        <SignalQualityPanel />
-        <OnchainHeatPanel />
-      </div>
-
-      <div className="agents-row">
-        <div>
-          <div className="section-label">main character</div>
-          <TraderPanel />
-        </div>
-        <div>
-          <div className="section-label">exchange specialist</div>
-          <KrakenPanel />
-        </div>
-      </div>
-
-      <div className="section-label">supporting cast</div>
-      <div className="support-row">
+      <div className="agent-grid">
+        <TraderPanel />
+        <KrakenPanel />
         <AlphaPanel />
         <GeneralPanel />
       </div>
 
+      <div className="bottom-strip">
+        <div className="bottom-left">
+          <WhatToWatch />
+          <ArbPanel />
+        </div>
+        <div className="bottom-right">
+          <HealthBar />
+          <div className="indicator-strip">
+            <SpreadPanel />
+            <VwapPanel />
+            <SignalQualityPanel />
+            <OnchainHeatPanel />
+          </div>
+        </div>
+      </div>
+
       <footer className="footer">
-        $DOG rune on bitcoin, dotswap and kraken, read only. operator actions ship as dry run cli strings.
+        $DOG rune on bitcoin, dogswap and kraken, read only. operator actions ship as dry run cli strings.
       </footer>
     </div>
   );

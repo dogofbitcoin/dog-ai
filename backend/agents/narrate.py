@@ -50,7 +50,13 @@ async def maybe_narrate(
     payload = {
         "model": _MODEL,
         "max_tokens": 120,
-        "system": _system_prompt(agent_name),
+        "system": [
+            {
+                "type": "text",
+                "text": _system_prompt(agent_name),
+                "cache_control": {"type": "ephemeral"},
+            }
+        ],
         "messages": [
             {
                 "role": "user",

@@ -37,9 +37,7 @@ from .strategies import DEFAULT_STRATEGY, REGISTRY as STRATEGIES, Strategy, get_
 
 # Tunables (env overridable for the demo).
 DECISION_CADENCE_S = int(os.getenv("TRADER_CADENCE_S", "30"))
-MIN_TRADE_COOLDOWN_S = int(os.getenv("TRADER_COOLDOWN_S", "60"))
-MAX_TRADE_DOG = float(os.getenv("TRADER_MAX_TRADE_DOG", "2000"))
-MAX_POSITION_DOG = float(os.getenv("TRADER_MAX_POSITION_DOG", "50000"))
+MAX_POSITION_DOG = float(os.getenv("TRADER_MAX_POSITION_DOG", "1000000"))
 HARD_STOP_DRAWDOWN_PCT = float(os.getenv("TRADER_HARD_STOP_PCT", "5.0"))
 STARTING_BALANCE_USD = float(os.getenv("TRADER_STARTING_USD", "10000"))
 DECISION_MODEL = os.getenv("TRADER_MODEL", "claude-haiku-4-5-20251001")
@@ -187,6 +185,9 @@ class TraderAgent(Agent):
         ctx = ctx_factory()
         indicators_snapshot = await self._snapshot_indicators(ctx)
 
+        # Auto-rotate strategy based on regime
+        self._auto_rotate_strategy(indicators_snapshot)
+
         # Decision via Claude
         decision = await self._ask_claude(indicators_snapshot)
         self.state["last_decision_ts"] = cycle_start_ts
@@ -216,6 +217,37 @@ class TraderAgent(Agent):
             log.warning("trader halted: %s", self.state["halt_reason"])
 
     # ------- Internals -------
+
+    def _auto_rotate_strategy(self, snap: dict) -> None:
+        """Pick the best strategy for the current regime. Runs every cycle
+        before the Claude decision call so the prompt reflects the right caps."""
+        heat = snap.get("onchain_heat", 0.0)
+        sq = snap.get("signal_quality", 0.0)
+        spread = snap.get("spread_bps", 0.0)
+        stale = snap.get("core_stale", False)
+        pnl_pct = float(self.state["portfolio"].get("unrealized_pnl_pct") or 0.0)
+        position_dog = float((self.state.get("balance") or {}).get("DOG", {}).get("total") or 0.0)
+
+        if stale or sq < 40:
+            pick = "watchdog"
+        elif heat < 35:
+            pick = "watchdog"
+        elif position_dog > 0 and pnl_pct > 1.0 and heat < 65:
+            pick = "sats-stacker"
+        elif heat > 60 and sq > 80 and spread < 30:
+            pick = "bite"
+        elif heat > 50 and sq > 50:
+            pick = "chase"
+        else:
+            pick = "dog-dca"
+
+        current = self.state["strategy"]
+        if pick != current:
+            log.info(
+                "auto-rotate strategy: %s -> %s (heat=%.1f sq=%.1f spread=%.1f pnl=%.2f%%)",
+                current, pick, heat, sq, spread, pnl_pct,
+            )
+            self.set_strategy(pick)
 
     async def _snapshot_indicators(self, ctx: AgentContext) -> dict:
         sq = await ctx.indicator("signal_quality")
@@ -291,7 +323,13 @@ class TraderAgent(Agent):
         payload = {
             "model": DECISION_MODEL,
             "max_tokens": 220,
-            "system": _system_prompt(skills),
+            "system": [
+                {
+                    "type": "text",
+                    "text": _system_prompt(skills),
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             "messages": [{"role": "user", "content": user_msg}],
         }
         headers = {
@@ -306,6 +344,14 @@ class TraderAgent(Agent):
                 log.info("trader.decide http %s body=%s", resp.status_code, resp.text[:200])
                 return {"action": "hold", "size_dog": 0, "reasoning": f"http {resp.status_code}"}
             data = resp.json()
+            usage = data.get("usage", {})
+            cache_read = usage.get("cache_read_input_tokens", 0)
+            cache_create = usage.get("cache_creation_input_tokens", 0)
+            if cache_read or cache_create:
+                log.info(
+                    "trader.decide cache: read=%d create=%d input=%d",
+                    cache_read, cache_create, usage.get("input_tokens", 0),
+                )
             text_block = next(
                 (b.get("text") for b in data.get("content", []) if b.get("type") == "text"),
                 "",
@@ -465,6 +511,9 @@ def _system_prompt(skills_blob: str) -> str:
     base = (
         "You are the Trader agent inside the Dog of Bitcoin v0.1 dashboard. "
         "You manage a small paper trading position on DOGUSD via the Kraken CLI. "
+        "Kraken is your execution venue; the exchange's depth, speed, and global liquidity are "
+        "what make this possible. You also monitor the Bitcoin L1 DogSwap pool to spot cross venue "
+        "arbitrage opportunities that benefit users on both sides. "
         "Real money is never at risk in v0.1; the codepath only calls `kraken paper buy/sell`. "
         "Your behaviour must still respect the practices in the Kraken-CLI skill packages below, "
         "as if the position were live.\n\n"
@@ -472,18 +521,23 @@ def _system_prompt(skills_blob: str) -> str:
         "self-titled 'dog army') accumulates patiently. Lean toward steady small buys when "
         "signal_quality is healthy, and only sell when the position is materially in profit or "
         "when an indicator regime obviously shifts.\n\n"
+        "Safety: in a live session, the dead man's switch (`kraken order cancel-after 600`) "
+        "ensures all open orders auto cancel if the agent crashes. The runtime refreshes "
+        "the timer each cycle. Balance and open order state are checked via `kraken balance` "
+        "and `kraken open-orders` before every decision.\n\n"
         "Decision rules:\n"
         "1. Output a strict JSON object {action, size_dog, reasoning}. No prose around it.\n"
         "2. action must be exactly buy, sell, or hold. size_dog is a non negative number of DOG units.\n"
-        "3. Hold whenever signal_quality is below 60 or core_stale is true. vwap_warming_up "
+        "3. Hold whenever signal_quality is below 40 or core_stale is true. vwap_warming_up "
         "is informational only and does not block decisions.\n"
         "4. Bias toward small sizes; the runtime caps your trade per cycle anyway.\n"
         "5. Sell only what you already hold; buy only when cash and caps allow.\n"
         "6. Reasoning is one sentence under 24 words. Use commas not dashes. "
         "Numerical figures, not words. No emoji.\n"
         "7. Treat onchain_heat as a directional bias hint and signal_quality as a confidence gate. "
-        "When heat is rising and signal_quality is high, accumulate. When heat drops below 35, hold "
-        "or trim. Avoid panic actions on a single cycle: a DCA cadence beats reactive flips.\n\n"
+        "When heat is above 50 and signal_quality is above 50, lean toward accumulating. "
+        "When heat drops below 35, hold or trim. The active strategy's prompt_extra has the "
+        "specific thresholds for this cycle; follow those over these defaults.\n\n"
         "Reference skills (read these once and follow their guardrails):\n"
         f"{skills_blob}"
     )

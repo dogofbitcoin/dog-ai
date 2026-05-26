@@ -35,7 +35,7 @@ app = FastAPI(title="Dog of Bitcoin", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "https://dogofbitcoin.io", "https://www.dogofbitcoin.io", "http://dogofbitcoin.io"],
     allow_methods=["GET"],
     allow_headers=["*"],
 )
@@ -147,6 +147,29 @@ async def set_trader_strategy(name: str = Query(..., min_length=1)) -> dict:
             detail={"error": f"unknown strategy {name!r}", "available": [s["name"] for s in list_strategies()]},
         )
     return {"active": trader.state["strategy"]}
+
+
+@app.get("/treasury")
+async def treasury() -> dict:
+    """Foundation wallet balance: BTC from mempool.space, DOG known balance, USD via Kraken."""
+    p = _prov.get("treasury")
+    return await p.fetch()
+
+
+@app.get("/kraken/account")
+async def kraken_account() -> dict:
+    """Kraken account overview: balance, open orders, trade volume, fee tier."""
+    p = _prov.get("kraken")
+    if not isinstance(p, KrakenProvider):
+        raise HTTPException(status_code=500, detail="kraken provider missing")
+    balance = await p.fetch(endpoint="balance")
+    orders = await p.fetch(endpoint="open-orders")
+    volume = await p.fetch(endpoint="volume")
+    return {
+        "balance": balance if "error" not in (balance or {}) else {"error": balance.get("error")},
+        "open_orders": orders if "error" not in (orders or {}) else {"error": orders.get("error")},
+        "volume": volume if "error" not in (volume or {}) else {"error": volume.get("error")},
+    }
 
 
 @app.get("/kraken/dry-run")

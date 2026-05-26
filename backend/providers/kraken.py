@@ -70,6 +70,12 @@ class KrakenProvider(Provider):
         endpoint = kwargs.get("endpoint", "ticker")
         pair = kwargs.get("pair", self.pair)
         try:
+            if endpoint in ("balance", "open-orders", "volume"):
+                if endpoint == "balance":
+                    return await self._balance()
+                if endpoint == "open-orders":
+                    return await self._open_orders()
+                return await self._volume(pair=pair)
             if pair == SYNTHETIC_DOGBTC:
                 return await self._fetch_synthetic_dogbtc(endpoint)
             if endpoint == "ticker":
@@ -78,6 +84,10 @@ class KrakenProvider(Provider):
                 return await self._trades(pair, count=int(kwargs.get("count", 20)))
             if endpoint == "orderbook":
                 return await self._orderbook(pair, count=int(kwargs.get("count", 10)))
+            if endpoint == "trades-history":
+                return await self._trades_history(pair=pair, count=int(kwargs.get("count", 20)))
+            if endpoint == "spreads":
+                return await self._spreads(pair=pair)
             return {"error": f"unknown endpoint {endpoint!r}"}
         except Exception as e:  # never raise out
             log.warning("kraken.fetch failed endpoint=%s pair=%s err=%s", endpoint, pair, e)
@@ -181,6 +191,100 @@ class KrakenProvider(Provider):
             "asks": asks,
             "synthetic": False,
         }
+
+    # ------- account and history endpoints -------
+
+    async def _balance(self) -> dict:
+        raw = await self._run(["balance", "-o", "json"])
+        if isinstance(raw, dict) and "error" in raw:
+            return raw
+        return {"ts": int(time.time()), "source": self.name, "balances": raw}
+
+    async def _open_orders(self) -> dict:
+        raw = await self._run(["open-orders", "-o", "json"])
+        if isinstance(raw, dict) and "error" in raw:
+            return raw
+        orders = raw.get("open", {}) if isinstance(raw, dict) else {}
+        return {
+            "ts": int(time.time()),
+            "source": self.name,
+            "count": len(orders),
+            "orders": orders,
+        }
+
+    async def _trades_history(self, pair: str, count: int) -> dict:
+        raw = await self._run(["trades-history", "-o", "json"])
+        if isinstance(raw, dict) and "error" in raw:
+            return raw
+        trades = raw.get("trades", {}) if isinstance(raw, dict) else {}
+        filtered = []
+        for tid, t in (trades.items() if isinstance(trades, dict) else []):
+            if pair == SYNTHETIC_DOGBTC:
+                if t.get("pair") not in ("DOGUSD", "XDOGUSD"):
+                    continue
+            elif t.get("pair") not in (pair, f"X{pair}", f"{pair}Z"):
+                continue
+            filtered.append({
+                "txid": tid,
+                "pair": t.get("pair"),
+                "side": t.get("type"),
+                "price": _to_float(t.get("price")),
+                "volume": _to_float(t.get("vol")),
+                "cost": _to_float(t.get("cost")),
+                "fee": _to_float(t.get("fee")),
+                "ts": int(_to_float(t.get("time"))),
+            })
+        filtered.sort(key=lambda x: x["ts"], reverse=True)
+        return {
+            "ts": int(time.time()),
+            "source": self.name,
+            "pair": pair,
+            "trades": filtered[:count],
+            "total_count": len(filtered),
+        }
+
+    async def _volume(self, pair: str) -> dict:
+        raw = await self._run(["volume", "-o", "json"])
+        if isinstance(raw, dict) and "error" in raw:
+            return raw
+        return {
+            "ts": int(time.time()),
+            "source": self.name,
+            "volume": raw.get("volume"),
+            "currency": raw.get("currency"),
+            "fees": raw.get("fees", {}),
+        }
+
+    async def _spreads(self, pair: str) -> dict:
+        target = "DOGUSD" if pair == SYNTHETIC_DOGBTC else pair
+        raw = await self._run(["spreads", target, "-o", "json"])
+        if isinstance(raw, dict) and "error" in raw:
+            return raw
+        spreads_data = _normalize_ticker_key(target, {k: v for k, v in raw.items() if k != "last"}) if isinstance(raw, dict) else None
+        entries = []
+        if isinstance(spreads_data, list):
+            for s in spreads_data[-20:]:
+                if isinstance(s, list) and len(s) >= 3:
+                    entries.append({
+                        "ts": int(_to_float(s[0])),
+                        "bid": _to_float(s[1]),
+                        "ask": _to_float(s[2]),
+                    })
+        return {
+            "ts": int(time.time()),
+            "source": self.name,
+            "pair": target,
+            "spreads": entries,
+        }
+
+    # ------- dead man's switch -------
+
+    async def cancel_after(self, timeout_seconds: int = 600) -> dict:
+        """Activate the dead man's switch. All open orders cancel if not refreshed."""
+        raw = await self._run(["order", "cancel-after", str(timeout_seconds), "-o", "json"])
+        if isinstance(raw, dict) and "error" in raw:
+            return raw
+        return {"ts": int(time.time()), "timeout_s": timeout_seconds, "result": raw}
 
     # ------- synthetic DOG/BTC -------
 

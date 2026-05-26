@@ -6,7 +6,11 @@ fill actually ran as a CLI command, what the next fill would look like as a
 dry-run preview, and which of the bundled SKILL.md packages is most relevant
 to the current regime.
 
-The character: a dog in a purple hoodie with a Kraken logo. Art lands later.
+Kraken is the bridge character. He shows users on both venues (Kraken CEX
+and Bitcoin L1) what the exchange state looks like, using the full surface
+of the Kraken CLI: ticker, balance, open-orders, trades-history, spreads,
+orderbook, and the paper trading engine. The dashboard makes this transparent
+so L1 users can see Kraken's depth and Kraken users can see L1's native pool.
 
 This agent is deterministic. No LLM call. It reads the spread indicator + the
 Trader's state and composes a structured envelope. The dashboard renders each
@@ -37,7 +41,7 @@ SKILL_RULES = [
     (
         lambda bps, sq, h: h is not None and h > 75,
         "kraken-spot-execution",
-        "Heat spiking, expect slippage. Ladder via batch orders and respect cancel-after deadman switch.",
+        "Heat spiking, expect slippage. Ladder via batch orders. Dead man's switch active: `kraken order cancel-after 600`.",
     ),
     (
         lambda bps, sq, h: h is not None and h < 30,
@@ -76,6 +80,12 @@ class KrakenAgent(Agent):
         # Live Kraken ticker on the synthetic and the real DOGUSD pair, side by side.
         synthetic_ticker = await self.kraken_provider.fetch(endpoint="ticker", pair="DOGBTC")
         direct_ticker = await self.kraken_provider.fetch(endpoint="ticker", pair="DOGUSD")
+
+        # Account state via CLI: balance, open orders, recent fills, spread history.
+        account_balance = await self.kraken_provider.fetch(endpoint="balance")
+        open_orders = await self.kraken_provider.fetch(endpoint="open-orders")
+        trade_history = await self.kraken_provider.fetch(endpoint="trades-history", pair="DOGUSD", count=5)
+        recent_spreads = await self.kraken_provider.fetch(endpoint="spreads", pair="DOGUSD")
 
         # Pull the Trader's last fill command (if it has one) from the shared registry.
         from . import get as get_agent
@@ -158,12 +168,34 @@ class KrakenAgent(Agent):
                     "buy_2000_at_bid": dry_run_buy,
                     "sell_2000_at_ask": dry_run_sell,
                 },
+                "account": {
+                    "balance": account_balance if "error" not in (account_balance or {}) else None,
+                    "open_orders": {
+                        "count": (open_orders or {}).get("count", 0),
+                        "available": "error" not in (open_orders or {}),
+                    },
+                    "recent_fills": (trade_history or {}).get("trades", []) if "error" not in (trade_history or {}) else [],
+                    "recent_spreads": (recent_spreads or {}).get("spreads", []) if "error" not in (recent_spreads or {}) else [],
+                },
                 "skill_in_focus": {"name": skill_name, "summary": skill_summary},
                 "regime": {
                     "spread_bps": spread_bps,
                     "signal_quality": sq_score,
                     "onchain_heat": heat_score,
                 },
+                "cli_commands_used": [
+                    "kraken ticker DOGUSD -o json",
+                    "kraken ticker XBTUSD -o json",
+                    "kraken balance -o json",
+                    "kraken open-orders -o json",
+                    "kraken trades-history -o json",
+                    "kraken spreads DOGUSD -o json",
+                    "kraken order buy/sell DOGUSD <vol> --validate -o json",
+                    "kraken paper buy/sell DOGUSD <vol> -o json",
+                    "kraken paper status -o json",
+                    "kraken paper balance -o json",
+                    "kraken status -o json",
+                ],
             },
         }
 

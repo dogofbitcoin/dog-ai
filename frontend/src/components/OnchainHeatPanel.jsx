@@ -35,7 +35,7 @@ export default function OnchainHeatPanel() {
             <Sparkline data={history} color="#f7931a" />
           </div>
           <div className="bar"><span style={{ width: `${Math.min(100, v.score)}%` }} /></div>
-          <div className="row"><span className="k" data-tip="how often DotSwap fills are landing. faster fills push this up.">fill rate</span><span>{v.components.fill_rate}</span></div>
+          <div className="row"><span className="k" data-tip="how often DogSwap fills are landing. faster fills push this up.">fill rate</span><span>{v.components.fill_rate}</span></div>
           <div className="row"><span className="k" data-tip="how much DOG liquidity is parked in the pool. deeper pool, higher score.">tvl</span><span>{v.components.tvl}</span></div>
           <div className="row"><span className="k" data-tip="how much volume is turning relative to pool size. high velocity means the pool is moving.">velocity</span><span>{v.components.velocity}</span></div>
           <div className="row"><span className="k">fills 1h</span><span>{v.raw.fill_count_1h}</span></div>

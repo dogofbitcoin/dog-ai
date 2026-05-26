@@ -42,10 +42,11 @@ export function pickPose(envelope) {
   if (reasoning.includes("heat") || reasoning.includes("onchain") || reasoning.includes("trend"))
     return "LISTENING_GENERAL";
 
-  if (action === "hold") return "HOLD";
   if (action === "buy" || action === "sell") return "ATTENTIVE";
 
   if (stance === "trading") return "WATCHING";
+
+  if (stance === "idle") return "HOLD";
 
   return "SOVEREIGN_DESK";
 }

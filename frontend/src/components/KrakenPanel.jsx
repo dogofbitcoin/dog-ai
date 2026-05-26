@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { api } from "../api.js";
 import { usePolling } from "../hooks/usePolling.js";
 import Tabs from "./Tabs.jsx";
+import CharacterAvatar from "./CharacterAvatar.jsx";
 
 const STANCE_COLOR = {
   "tight-book": "#f7931a",
@@ -52,7 +53,7 @@ function TickerTab({ k }) {
             <div className="kv"><span className="k">bid</span><span>{fmtSatsFromBtc(synth.bid)}</span></div>
             <div className="kv"><span className="k">ask</span><span>{fmtSatsFromBtc(synth.ask)}</span></div>
             <div className="kv"><span className="k">last</span><span>{fmtSatsFromBtc(synth.last)}</span></div>
-            <div className="sub muted">from DOGUSD ÷ XBTUSD</div>
+            <div className="sub muted">from DOGUSD / XBTUSD</div>
           </>
         ) : <div className="muted">unavailable</div>}
       </div>
@@ -111,17 +112,30 @@ export default function KrakenPanel() {
   if (!k) {
     return (
       <div className="panel panel-wide">
-        <div className="name"><span>agent kraken <span className="muted">exchange specialist</span></span><span className="muted">loading</span></div>
-        <div className="value muted">loading...</div>
+        <div className="panel-hero">
+          <CharacterAvatar name="kraken" stance="watching" size={90} />
+          <div className="panel-hero-text">
+            <div className="name"><span>Kraken</span><span className="muted">exchange specialist</span></div>
+            <div className="value muted">loading...</div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={`panel panel-wide ${stale ? "stale" : ""}`}>
-      <div className="name">
-        <span>agent kraken <span className="muted">exchange specialist</span></span>
-        <span style={{ color }}>{env.stance}</span>
+      <div className="panel-hero">
+        <CharacterAvatar name="kraken" stance={env.stance} envelope={env} size={90} />
+        <div className="panel-hero-text">
+          <div className="name">
+            <span>Kraken <span className="muted">exchange specialist</span></span>
+            <span className="stance-pill" style={{ color, borderColor: color }}>
+              <span className="pulse-dot" style={{ background: color }} />
+              {env.stance}
+            </span>
+          </div>
+        </div>
       </div>
 
       <Tabs

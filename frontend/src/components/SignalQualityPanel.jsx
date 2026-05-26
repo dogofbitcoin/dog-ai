@@ -29,7 +29,7 @@ export default function SignalQualityPanel() {
           <div className="bar green"><span style={{ width: `${Math.min(100, v.score)}%` }} /></div>
           <div className="row"><span className="k" data-tip="how recently the data updated. stale data drops this.">freshness</span><span>{v.components.freshness}</span></div>
           <div className="row"><span className="k" data-tip="how thick the order book is. thin books mean small trades move price.">depth</span><span>{v.components.depth}</span></div>
-          <div className="row"><span className="k" data-tip="how closely the DotSwap and Kraken prices agree. divergence drops this.">agreement</span><span>{v.components.agreement}</span></div>
+          <div className="row"><span className="k" data-tip="how closely the DogSwap and Kraken prices agree. divergence drops this.">agreement</span><span>{v.components.agreement}</span></div>
           <div className="row"><span className="k">age</span><span>{v.age_seconds}s</span></div>
           {env.meta.notes ? <div className="sub">{env.meta.notes}</div> : null}
         </>

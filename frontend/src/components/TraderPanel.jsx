@@ -5,6 +5,7 @@ import { useSparkline } from "../hooks/useSparkline.js";
 import Tabs from "./Tabs.jsx";
 import Sparkline from "./Sparkline.jsx";
 import RiskMeter from "./RiskMeter.jsx";
+import CharacterAvatar from "./CharacterAvatar.jsx";
 
 const STANCE_COLOR = {
   trading: "#f7931a",
@@ -155,8 +156,13 @@ export default function TraderPanel() {
   if (!t) {
     return (
       <div className="panel panel-wide">
-        <div className="name"><span>agent dog of bitcoin <span className="muted">main character</span></span><span className="muted">loading</span></div>
-        <div className="value muted">loading...</div>
+        <div className="panel-hero">
+          <CharacterAvatar name="trader" stance="idle" size={90} />
+          <div className="panel-hero-text">
+            <div className="name"><span>Dog of Bitcoin</span><span className="muted">main character</span></div>
+            <div className="value muted">loading...</div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -166,36 +172,48 @@ export default function TraderPanel() {
 
   return (
     <div className="panel panel-wide">
-      <div className="name">
-        <span>agent dog of bitcoin <span className="muted">main character</span></span>
-        <span style={{ color }}>{env.stance}</span>
+      <div className="panel-hero">
+        <CharacterAvatar name="trader" stance={env.stance} envelope={env} size={90} />
+        <div className="panel-hero-text">
+          <div className="name">
+            <span>Dog of Bitcoin <span className="muted">main character</span></span>
+            <span className="stance-pill" style={{ color, borderColor: color }}>
+              <span className="pulse-dot" style={{ background: color }} />
+              {env.stance}
+            </span>
+          </div>
+
+          {!t.configured ? (
+            <div className="value muted">ANTHROPIC_API_KEY not set</div>
+          ) : (
+            <>
+              <div className="strategy-bar">
+                {strategies.map((s) => {
+                  const isActive = s.name === active;
+                  return (
+                    <button
+                      key={s.name}
+                      className={`strat-btn${isActive ? " active" : ""}`}
+                      disabled={switching}
+                      onClick={() => onPickStrategy(s.name)}
+                      title={`${s.description}\n\nKraken CLI: ${s.kraken_emphasis}\nmax ${s.max_trade_dog} DOG/cycle · cooldown ${s.cooldown_s}s`}
+                      type="button"
+                    >
+                      {s.title}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="sub strategy-detail">
+                {t.strategy?.description} <span className="muted">— {t.strategy?.kraken_emphasis}</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {!t.configured ? (
-        <div className="value muted">ANTHROPIC_API_KEY not set</div>
-      ) : (
+      {t.configured && (
         <>
-          <div className="strategy-bar">
-            {strategies.map((s) => {
-              const isActive = s.name === active;
-              return (
-                <button
-                  key={s.name}
-                  className={`strat-btn${isActive ? " active" : ""}`}
-                  disabled={switching}
-                  onClick={() => onPickStrategy(s.name)}
-                  title={`${s.description}\n\nKraken CLI: ${s.kraken_emphasis}\nmax ${s.max_trade_dog} DOG/cycle · cooldown ${s.cooldown_s}s`}
-                  type="button"
-                >
-                  {s.title}
-                </button>
-              );
-            })}
-          </div>
-          <div className="sub strategy-detail">
-            {t.strategy?.description} <span className="muted">— {t.strategy?.kraken_emphasis}</span>
-          </div>
-
           <Tabs
             tabs={[
               { id: "now", label: "now", render: () => <NowTab t={t} env={env} /> },
@@ -203,7 +221,6 @@ export default function TraderPanel() {
               { id: "log", label: "log", badge: log.length || null, render: () => <LogTab log={log} /> },
             ]}
           />
-
           <div className="sub muted" style={{ marginTop: 10 }}>
             paper mode · max {fmtNum(t.config.max_trade_dog, 0)} DOG/cycle · cooldown {t.config.cooldown_s}s
           </div>

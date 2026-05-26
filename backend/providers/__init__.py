@@ -34,3 +34,4 @@ def all_providers() -> list[Provider]:
 # Order is alphabetical, not load bearing.
 from . import dotswap  # noqa: E402, F401
 from . import kraken  # noqa: E402, F401
+from . import treasury  # noqa: E402, F401

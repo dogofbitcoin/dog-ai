@@ -40,6 +40,7 @@ def make_context(indicator: Indicator, now_ts: int | None = None) -> IndicatorCo
 
 
 # Import implementations so they self register. Alphabetical.
+from . import arb_spread  # noqa: E402, F401
 from . import onchain_heat  # noqa: E402, F401
 from . import signal_quality  # noqa: E402, F401
 from . import spread  # noqa: E402, F401

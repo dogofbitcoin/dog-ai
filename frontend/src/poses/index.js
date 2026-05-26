@@ -1,7 +1,13 @@
 import * as dogOfBitcoin from "./dogOfBitcoin.js";
+import * as generalGhost from "./generalGhost.js";
+import * as alpha from "./alpha.js";
+import * as kraken from "./kraken.js";
 
 const registry = {
   trader: dogOfBitcoin,
+  general: generalGhost,
+  alpha: alpha,
+  kraken: kraken,
 };
 
 export function getPoseUrl(agentName, envelope) {
