@@ -7,7 +7,7 @@ How the two Claude sessions (and any future contributors) divide work on Dog of 
 | Session | Lives on | Can see | Cannot see | Primary job |
 |---|---|---|---|---|
 | Desktop Claude | maintainer laptop | screenshots, design files, the live dashboard in a browser | the AWS server filesystem directly | own `docs/UI_SPEC.md`, design decisions, visual reviews |
-| AWS Claude | server at 98.87.230.156 | the repo on the server, running services, logs, terminal output | screenshots, the live rendered UI | implement to spec, run services, debug backend, write tests |
+| AWS Claude | self hosted server | the repo on the server, running services, logs, terminal output | screenshots, the live rendered UI | implement to spec, run services, debug backend, write tests |
 
 The split is not about capability, it is about ground truth. Whoever has the most direct view of a given artifact owns changes to that artifact.
 

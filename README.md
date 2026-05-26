@@ -4,7 +4,7 @@ The agent stack for DOG on Bitcoin L1. Born from Kraken's Agent Zero, the moment
 
 > **v0.1.0 Release The Kraken**
 > Kraken Agent Zero submission, deadline 2026-05-27.
-> Live dashboard: `http://98.87.230.156:5173`
+> Live dashboard available at submission time (self hosted)
 
 ## What this is
 
