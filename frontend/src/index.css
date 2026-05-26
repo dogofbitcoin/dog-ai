@@ -692,6 +692,36 @@ a {
   display: block;
 }
 
+.pose-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.pose-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: opacity 0.5s ease;
+}
+
+.pose-img-visible {
+  opacity: 1;
+  z-index: 1;
+}
+
+.pose-img-loading {
+  opacity: 0;
+  z-index: 1;
+}
+
+.pose-img-prev {
+  opacity: 1;
+  z-index: 0;
+}
+
 .character-info {
   min-width: 0;
   flex: 1;

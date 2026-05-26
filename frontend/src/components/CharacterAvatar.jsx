@@ -1,3 +1,6 @@
+import { useState, useEffect, useRef } from "react";
+import { getPoseUrl, hasPoses } from "../poses/index.js";
+
 function DogOfBitcoin() {
   return (
     <svg viewBox="0 0 64 64" className="avatar-svg" aria-hidden="true">
@@ -89,7 +92,7 @@ function Kraken() {
   );
 }
 
-const RENDERERS = {
+const SVG_RENDERERS = {
   trader: DogOfBitcoin,
   alpha: Alpha,
   general: GeneralGhost,
@@ -120,8 +123,71 @@ const ANIMATION_CLASS = {
   },
 };
 
-export default function CharacterAvatar({ name, stance, size = 64 }) {
-  const Renderer = RENDERERS[name];
+function PoseImage({ src, alt, size }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const prevSrc = useRef(src);
+  const prevLoaded = useRef(null);
+
+  useEffect(() => {
+    if (src !== prevSrc.current) {
+      if (loaded) prevLoaded.current = prevSrc.current;
+      prevSrc.current = src;
+      setLoaded(false);
+      setErrored(false);
+    }
+  }, [src, loaded]);
+
+  if (errored) return null;
+
+  return (
+    <div className="pose-container" style={{ width: size, height: size }}>
+      {prevLoaded.current && !loaded && (
+        <img
+          src={prevLoaded.current}
+          alt=""
+          className="pose-img pose-img-prev"
+          style={{ width: size, height: size }}
+        />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`pose-img ${loaded ? "pose-img-visible" : "pose-img-loading"}`}
+        style={{ width: size, height: size }}
+        onLoad={() => {
+          setLoaded(true);
+          prevLoaded.current = null;
+        }}
+        onError={() => setErrored(true)}
+      />
+    </div>
+  );
+}
+
+export default function CharacterAvatar({ name, stance, envelope, size = 64 }) {
+  const poseUrl = hasPoses(name) ? getPoseUrl(name, envelope) : null;
+  const [poseAvailable, setPoseAvailable] = useState(null);
+  const checkedUrls = useRef(new Set());
+
+  useEffect(() => {
+    if (!poseUrl) { setPoseAvailable(false); return; }
+    if (checkedUrls.current.has(poseUrl)) return;
+    const img = new Image();
+    img.onload = () => { checkedUrls.current.add(poseUrl); setPoseAvailable(true); };
+    img.onerror = () => { checkedUrls.current.add(poseUrl); setPoseAvailable(false); };
+    img.src = poseUrl;
+  }, [poseUrl]);
+
+  if (poseAvailable && poseUrl) {
+    return (
+      <div className="avatar" style={{ width: size, height: size }}>
+        <PoseImage src={poseUrl} alt={name} size={size} />
+      </div>
+    );
+  }
+
+  const Renderer = SVG_RENDERERS[name];
   if (!Renderer) return null;
   const animClass = ANIMATION_CLASS[name]?.[stance] || "anim-breath";
   return (

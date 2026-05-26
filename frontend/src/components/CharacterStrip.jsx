@@ -46,7 +46,7 @@ export default function CharacterStrip() {
         const color = STANCE_COLOR[stance] || "#7a7088";
         return (
           <div key={name} className="character-card">
-            <CharacterAvatar name={name} stance={stance} />
+            <CharacterAvatar name={name} stance={stance} envelope={env} size={80} />
             <div className="character-info">
               <div className="character-name">{meta.display}</div>
               <div className="character-role">{meta.role}</div>
