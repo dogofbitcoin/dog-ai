@@ -67,11 +67,13 @@ function SkillTab({ k }) {
       <div className="block-title">skill in focus</div>
       <div className="skill-name">{k.skill_in_focus?.name}</div>
       <div className="skill-summary">{k.skill_in_focus?.summary}</div>
-      <div className="sub muted" style={{ marginTop: 10 }}>
-        Skill rotates with market regime. 8 SKILL.md files mirrored from krakenfx/kraken-cli; agent kraken picks the one matching current spread, signal quality, and onchain heat.
-      </div>
     </div>
   );
+}
+
+function shortCmd(cmd) {
+  if (!cmd) return "";
+  return cmd.replace(/\/home\/[^\s]+\/kraken/, "kraken");
 }
 
 function CliTab({ k }) {
@@ -80,22 +82,20 @@ function CliTab({ k }) {
   return (
     <>
       <div className="kraken-cmds">
-        <div className="block-title">last fill (CLI)</div>
+        <div className="block-title">last fill</div>
         {lastCmd ? (
           <>
-            <div className="cli">{lastCmd.command}</div>
-            <div className="sub muted">{fmtAgo(lastCmd.ts)} · {lastCmd.decision?.reasoning}</div>
+            <div className="cli">{shortCmd(lastCmd.command)}</div>
+            <div className="sub muted">{fmtAgo(lastCmd.ts)}</div>
           </>
         ) : (
           <div className="muted">no fills yet</div>
         )}
       </div>
-
       <div className="kraken-cmds">
-        <div className="block-title">dry run preview (next fire)</div>
-        <div className="cli">{dry.buy_2000_at_bid}</div>
-        <div className="cli">{dry.sell_2000_at_ask}</div>
-        <div className="sub muted">--validate means kraken parses but does not place</div>
+        <div className="block-title">dry run preview</div>
+        <div className="cli">{shortCmd(dry.buy_2000_at_bid)}</div>
+        <div className="cli">{shortCmd(dry.sell_2000_at_ask)}</div>
       </div>
     </>
   );

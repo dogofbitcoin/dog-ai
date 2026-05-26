@@ -45,19 +45,23 @@ export default function App() {
         <TreasuryPanel />
       </Spot>
 
-      <div className="agent-grid">
-        <Spot id="trader" label="Dog of Bitcoin" active={spot} onToggle={toggle}>
-          <TraderPanel />
-        </Spot>
-        <Spot id="kraken" label="Kraken Agent" active={spot} onToggle={toggle}>
-          <KrakenPanel />
-        </Spot>
-        <Spot id="alpha" label="Alpha" active={spot} onToggle={toggle}>
-          <AlphaPanel />
-        </Spot>
-        <Spot id="general" label="General Ghost" active={spot} onToggle={toggle}>
-          <GeneralPanel />
-        </Spot>
+      <div className="agent-layout">
+        <div className="agent-main">
+          <Spot id="trader" label="Dog of Bitcoin" active={spot} onToggle={toggle}>
+            <TraderPanel />
+          </Spot>
+        </div>
+        <div className="agent-side">
+          <Spot id="kraken" label="Kraken Agent" active={spot} onToggle={toggle}>
+            <KrakenPanel />
+          </Spot>
+          <Spot id="alpha" label="Alpha" active={spot} onToggle={toggle}>
+            <AlphaPanel />
+          </Spot>
+          <Spot id="general" label="General Ghost" active={spot} onToggle={toggle}>
+            <GeneralPanel />
+          </Spot>
+        </div>
       </div>
 
       <div className="bottom-strip">

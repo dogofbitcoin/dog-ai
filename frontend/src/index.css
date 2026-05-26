@@ -112,16 +112,24 @@ a {
   margin-bottom: 6px;
 }
 
-.agent-grid {
+.agent-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   margin-bottom: 18px;
+  align-items: start;
 }
-
-.agent-grid > .panel,
-.agent-grid > .spotlight-wrap > .panel {
-  min-height: 0;
+.agent-main {
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 12px;
+  align-self: start;
+}
+.agent-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .bottom-strip {
@@ -146,7 +154,7 @@ a {
   .indicator-strip {
     grid-template-columns: repeat(2, 1fr);
   }
-  .agent-grid {
+  .agent-layout {
     grid-template-columns: 1fr;
   }
   .bottom-strip {
