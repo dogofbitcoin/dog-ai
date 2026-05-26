@@ -1047,12 +1047,51 @@ a {
   color: var(--orange);
   font-weight: 600;
 }
+.treasury-bottom {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
 .treasury-totals {
+  flex: 1;
   padding: 6px 8px;
   background: var(--bg-block);
   border-radius: 6px;
   border: 1px solid var(--border);
   border-left: 2px solid var(--orange);
+}
+.treasury-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.treasury-qr-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.treasury-qr-img:hover {
+  transform: scale(1.8);
+  box-shadow: 0 0 24px rgba(247, 147, 26, 0.4), 0 0 48px rgba(139, 92, 246, 0.2);
+  z-index: 20;
+  position: relative;
+}
+.treasury-qr-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--orange);
+  text-align: center;
+  white-space: nowrap;
+}
+.treasury-qr-sub {
+  font-size: 0.52rem;
+  color: var(--text-mute);
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* Spotlight mode — click any panel to highlight, rest dims */

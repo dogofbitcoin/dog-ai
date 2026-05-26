@@ -83,18 +83,26 @@ export default function TreasuryPanel() {
             </div>
           </div>
 
-          <div className="treasury-totals">
-            <div className="treasury-row">
-              <span className="treasury-k">total DOG</span>
-              <span className="treasury-v treasury-highlight">{fmtDog(tot?.dog)}</span>
+          <div className="treasury-bottom">
+            <div className="treasury-totals">
+              <div className="treasury-row">
+                <span className="treasury-k">total DOG</span>
+                <span className="treasury-v treasury-highlight">{fmtDog(tot?.dog)}</span>
+              </div>
+              <div className="treasury-row">
+                <span className="treasury-k">total BTC</span>
+                <span className="treasury-v">{fmtBtc(tot?.btc)}</span>
+              </div>
+              <div className="treasury-row">
+                <span className="treasury-k">USD cash</span>
+                <span className="treasury-v">{fmtUsd(tot?.usd_cash)}</span>
+              </div>
             </div>
-            <div className="treasury-row">
-              <span className="treasury-k">total BTC</span>
-              <span className="treasury-v">{fmtBtc(tot?.btc)}</span>
-            </div>
-            <div className="treasury-row">
-              <span className="treasury-k">USD cash</span>
-              <span className="treasury-v">{fmtUsd(tot?.usd_cash)}</span>
+            <div className="treasury-qr">
+              <img src="/assets/branding/foundation-qr.png" alt="Foundation wallet QR" className="treasury-qr-img" />
+              <div className="treasury-qr-label">Dog of Bitcoin Foundation</div>
+              <div className="treasury-qr-sub">501(c)(3) non profit</div>
+              <div className="treasury-qr-sub">100% community backed</div>
             </div>
           </div>
         </>
