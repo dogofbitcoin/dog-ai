@@ -101,8 +101,8 @@ export default function TreasuryPanel() {
             <div className="treasury-qr">
               <img src="/assets/branding/foundation-qr.png" alt="Foundation wallet QR" className="treasury-qr-img" />
               <div className="treasury-qr-label">Dog of Bitcoin Foundation</div>
-              <div className="treasury-qr-sub">501(c)(3) non profit</div>
-              <div className="treasury-qr-sub">100% community backed</div>
+              <div className="treasury-qr-sub">501(c)(3) · 100% community backed</div>
+              <div className="treasury-qr-donate">donate $DOG & BTC</div>
             </div>
           </div>
         </>

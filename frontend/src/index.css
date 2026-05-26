@@ -1093,6 +1093,13 @@ a {
   text-align: center;
   white-space: nowrap;
 }
+.treasury-qr-donate {
+  font-size: 0.5rem;
+  color: var(--purple-light);
+  text-align: center;
+  opacity: 0.6;
+  letter-spacing: 0.04em;
+}
 
 /* Spotlight mode — click any panel to highlight, rest dims */
 .spotlight-wrap {
