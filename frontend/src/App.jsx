@@ -11,6 +11,8 @@ import KrakenPanel from "./components/KrakenPanel.jsx";
 import WhatToWatch from "./components/WhatToWatch.jsx";
 import ArbPanel from "./components/ArbPanel.jsx";
 import TreasuryPanel from "./components/TreasuryPanel.jsx";
+import TradeFeed from "./components/TradeFeed.jsx";
+import OrderBook from "./components/OrderBook.jsx";
 
 function Spot({ id, label, active, onToggle, children }) {
   return (
@@ -62,6 +64,15 @@ export default function App() {
             <GeneralPanel />
           </Spot>
         </div>
+      </div>
+
+      <div className="market-strip">
+        <Spot id="orderbook" label="Order Book" active={spot} onToggle={toggle}>
+          <OrderBook />
+        </Spot>
+        <Spot id="trades" label="Live Trades" active={spot} onToggle={toggle}>
+          <TradeFeed />
+        </Spot>
       </div>
 
       <div className="bottom-strip">

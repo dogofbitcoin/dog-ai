@@ -21,6 +21,8 @@ export const api = {
   strategies: () => getJson("/agents/trader/strategies"),
   setStrategy: (name) => postJson(`/agents/trader/strategy?name=${encodeURIComponent(name)}`),
   treasury: () => getJson("/treasury"),
+  krakenTrades: () => getJson("/kraken/trades"),
+  krakenOrderbook: () => getJson("/kraken/orderbook"),
   dryRun: ({ side, volume, price, pair, orderType }) => {
     const params = new URLSearchParams({ side, volume: String(volume) });
     if (price != null) params.set("price", String(price));

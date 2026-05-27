@@ -156,6 +156,20 @@ async def treasury() -> dict:
     return await p.fetch()
 
 
+@app.get("/kraken/trades")
+async def kraken_trades() -> dict:
+    """Recent public DOGUSD trades from Kraken."""
+    p = _prov.get("kraken")
+    return await p.fetch(endpoint="trades", pair="DOGUSD", count=30)
+
+
+@app.get("/kraken/orderbook")
+async def kraken_orderbook() -> dict:
+    """DOGUSD order book depth from Kraken."""
+    p = _prov.get("kraken")
+    return await p.fetch(endpoint="orderbook", pair="DOGUSD", count=25)
+
+
 @app.get("/kraken/account")
 async def kraken_account() -> dict:
     """Kraken account overview: balance, open orders, trade volume, fee tier."""
