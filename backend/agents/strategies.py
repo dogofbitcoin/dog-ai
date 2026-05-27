@@ -58,12 +58,12 @@ DOG_DCA = Strategy(
     cooldown_s=60,
     order_type="limit",
     prompt_extra=(
-        "Strategy: DOG DCA. Accumulate patiently on $DOG. Lean toward small buys "
-        "every few cycles when signal_quality > 50 and heat is stable or rising. "
-        "Sell when unrealised_pnl_pct > 1 percent and heat is trending down, "
-        "or when heat collapses below 35. "
-        "Avoid reactive flips. A steady cadence beats one big call. Use limit "
-        "orders priced at the current bid; the runtime appends the limit price."
+        "Strategy: DOG DCA. Accumulate patiently on $DOG. Buy small amounts (500 to "
+        "2000 DOG) when signal_quality > 50, heat is stable or rising, and DOG position "
+        "is under 60 percent of portfolio value. Skip buying if position is already heavy. "
+        "Sell when unrealised_pnl_pct > 1 percent, when heat drops below 35, or when DOG "
+        "exceeds 70 percent of portfolio value (rebalance). Hold on most cycles; buy every "
+        "3rd or 4th cycle at most. Use limit orders at the bid."
     ),
 )
 
@@ -72,19 +72,22 @@ CHASE = Strategy(
     name="chase",
     title="Chase",
     description=(
-        "Momentum. Buys when on chain heat is above 50 with signal quality above 50, "
-        "sells when heat drops past 35. Takes the taker fee for speed."
+        "Momentum. Buys when on chain heat is above 55 with signal quality above 50, "
+        "takes profit at 1% PnL or when heat cools below 45."
     ),
     kraken_emphasis="kraken paper buy/sell DOGUSD <vol> --type market (instant fill)",
-    max_trade_dog=5000.0,
-    cooldown_s=30,
+    max_trade_dog=3000.0,
+    cooldown_s=45,
     order_type="market",
     prompt_extra=(
         "Strategy: Chase. Trend follow $DOG using on chain heat as your primary "
-        "signal. Buy when heat is above 50 with healthy signal_quality above 50. "
-        "Sell when heat crosses down through 35. Use market orders; speed beats "
-        "fee here. Do not chase heat that has already cooled. If heat is below "
-        "35, hold."
+        "signal. Buy when heat is above 55 with signal_quality above 50, but only "
+        "if the DOG position is under 50 percent of portfolio value (do not go all "
+        "in, keep dry powder). Sell when heat drops below 45, when unrealised_pnl_pct "
+        "exceeds 1 percent (take profit), or when the DOG position exceeds 70 percent "
+        "of portfolio value (rebalance). Use market orders; speed beats fee here. "
+        "Hold when heat is flat between 45 and 55. Alternate between buy and hold "
+        "cycles; do not buy every single cycle even if conditions are met."
     ),
 )
 
@@ -101,11 +104,13 @@ BITE = Strategy(
     cooldown_s=300,
     order_type="limit",
     prompt_extra=(
-        "Strategy: Bite. You are a sniper. Fire ONLY when ALL three conditions "
+        "Strategy: Bite. You are a sniper. Buy ONLY when ALL three conditions "
         "hold simultaneously: onchain_heat > 60, signal_quality > 80, "
-        "spread_bps < 30. Otherwise hold; the cooldown is 5 minutes so wasted "
-        "shots are expensive. When you fire, use a limit order priced one tick "
-        "inside the current bid. Sell only on heat collapse below 40."
+        "spread_bps < 30, and DOG position is under 50 percent of portfolio. "
+        "Otherwise hold; the cooldown is 5 minutes so wasted shots are expensive. "
+        "Use a limit order priced one tick inside the current bid. "
+        "Sell when unrealised_pnl_pct > 1 percent (take profit), when heat "
+        "collapses below 40, or when DOG exceeds 60 percent of portfolio value."
     ),
 )
 

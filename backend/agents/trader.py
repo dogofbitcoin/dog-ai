@@ -36,7 +36,7 @@ from .base import Agent, AgentContext
 from .strategies import DEFAULT_STRATEGY, REGISTRY as STRATEGIES, Strategy, get_strategy
 
 # Tunables (env overridable for the demo).
-DECISION_CADENCE_S = int(os.getenv("TRADER_CADENCE_S", "30"))
+DECISION_CADENCE_S = int(os.getenv("TRADER_CADENCE_S", "60"))
 MAX_POSITION_DOG = float(os.getenv("TRADER_MAX_POSITION_DOG", "1000000"))
 HARD_STOP_DRAWDOWN_PCT = float(os.getenv("TRADER_HARD_STOP_PCT", "5.0"))
 STARTING_BALANCE_USD = float(os.getenv("TRADER_STARTING_USD", "10000"))
@@ -236,7 +236,7 @@ class TraderAgent(Agent):
             pick = "sats-stacker"
         elif heat > 60 and sq > 80 and spread < 30:
             pick = "bite"
-        elif heat > 50 and sq > 50:
+        elif heat > 55 and sq > 50:
             pick = "chase"
         else:
             pick = "dog-dca"
@@ -300,6 +300,12 @@ class TraderAgent(Agent):
         portfolio_value = float(self.state["portfolio"].get("current_value") or STARTING_BALANCE_USD)
         cooling_down = (_now() - self.state["last_fill_ts"]) < strat.cooldown_s
 
+        dog_price_usd = 0.0
+        if portfolio_value > 0 and position_dog > 0:
+            dog_price_usd = (portfolio_value - cash_usd) / position_dog if position_dog else 0
+        dog_value_usd = position_dog * dog_price_usd
+        dog_pct_of_portfolio = (dog_value_usd / portfolio_value * 100) if portfolio_value else 0
+
         user_msg = (
             f"Active strategy: {strat.title} ({strat.name})\n"
             f"Strategy guidance: {strat.prompt_extra}\n\n"
@@ -308,7 +314,9 @@ class TraderAgent(Agent):
             "Paper portfolio:\n"
             f"  value_usd: {portfolio_value:.2f}\n"
             f"  cash_usd: {cash_usd:.2f}\n"
-            f"  dog_position: {position_dog:.2f}\n"
+            f"  dog_position: {position_dog:.0f}\n"
+            f"  dog_value_usd: {dog_value_usd:.2f}\n"
+            f"  dog_pct_of_portfolio: {dog_pct_of_portfolio:.1f}%\n"
             f"  unrealised_pnl_pct: {pnl_pct:.3f}\n\n"
             f"Caps for this strategy: max trade per cycle = {strat.max_trade_dog} DOG, "
             f"cooldown = {strat.cooldown_s}s, order_type = {strat.order_type}. "
