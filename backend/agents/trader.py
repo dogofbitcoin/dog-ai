@@ -228,15 +228,23 @@ class TraderAgent(Agent):
         pnl_pct = float(self.state["portfolio"].get("unrealized_pnl_pct") or 0.0)
         position_dog = float((self.state.get("balance") or {}).get("DOG", {}).get("total") or 0.0)
 
+        portfolio_value = float(self.state["portfolio"].get("current_value") or STARTING_BALANCE_USD)
+        cash_usd = float((self.state.get("balance") or {}).get("USD", {}).get("total") or 0.0)
+        dog_value_usd = portfolio_value - cash_usd
+        dog_pct = (dog_value_usd / portfolio_value * 100) if portfolio_value else 0
+        near_cap = position_dog > MAX_POSITION_DOG * 0.75
+
         if stale or sq < 40:
             pick = "watchdog"
         elif heat < 35:
             pick = "watchdog"
+        elif near_cap or dog_pct > 70:
+            pick = "sats-stacker"
         elif position_dog > 0 and pnl_pct > 1.0 and heat < 65:
             pick = "sats-stacker"
-        elif heat > 60 and sq > 80 and spread < 30:
+        elif heat > 60 and sq > 80 and spread < 30 and dog_pct < 50:
             pick = "bite"
-        elif heat > 55 and sq > 50:
+        elif heat > 55 and sq > 50 and dog_pct < 60:
             pick = "chase"
         else:
             pick = "dog-dca"
@@ -244,8 +252,8 @@ class TraderAgent(Agent):
         current = self.state["strategy"]
         if pick != current:
             log.info(
-                "auto-rotate strategy: %s -> %s (heat=%.1f sq=%.1f spread=%.1f pnl=%.2f%%)",
-                current, pick, heat, sq, spread, pnl_pct,
+                "auto-rotate strategy: %s -> %s (heat=%.1f sq=%.1f spread=%.1f pnl=%.2f%% dog=%.0f dog_pct=%.1f%%)",
+                current, pick, heat, sq, spread, pnl_pct, position_dog, dog_pct,
             )
             self.set_strategy(pick)
 
